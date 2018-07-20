@@ -26,11 +26,11 @@ async function fetchApplicationDecision(url, maxRetries) {
 	console.log("Feteching applicationd decision from", url, "with", maxRetries, "max retries");
 	let currentRetries = 0;
 	while (currentRetries++ < maxRetries) {
-		console.log("Retrying for the", currentRetries, "time");
 		let resp = await doDecisionCall(url, 10000);
 		if (resp.data.Status === "Approved") {
 			return resp.data;
 		}
+		console.log("Retrying for the", currentRetries, "time");
 	}
 	throw new Error("Failed to retrieve decision after " + maxRetries + " retires");
 }
