@@ -13,7 +13,7 @@ exports.handler = function (event, context, callback) {
 			return axios.post(applicationCreateResponse.data.Links[0].Href.replace(tempProdUrl, baseUrl), {});
 		}).then(decisionResponse => {
 			console.log("Successfully received decition create response");
-			return fetchApplicationDecision(decisionResponse.data.Links[0].Href.replace(tempProdUrl, baseUrl), 10);
+			return fetchApplicationDecision(decisionResponse.data.Links[0].Href.replace(tempProdUrl, baseUrl), 25);
 		}).then(applicationDecision => {
 			callback(null, applicationDecision);
 		}).catch(err => {
@@ -26,7 +26,7 @@ async function fetchApplicationDecision(url, maxRetries) {
 	console.log("Feteching applicationd decision from", url, "with", maxRetries, "max retries");
 	let currentRetries = 0;
 	while (currentRetries++ < maxRetries) {
-		let resp = await doDecisionCall(url, 10000);
+		let resp = await doDecisionCall(url, 1000);
 		if (resp.data.Status === "Approved") {
 			return resp.data;
 		}
