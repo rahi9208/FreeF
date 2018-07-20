@@ -12,7 +12,7 @@ exports.handler = function (event, context, callback) {
 			console.log("Successfully received application create response", applicationCreateResponse.data);
 			return axios.post(applicationCreateResponse.data.Links[0].Href.replace(tempProdUrl, baseUrl), {});
 		}).then(decisionResponse => {
-			console.log("Successfully received decition create response");
+			console.log("Successfully received decision create response");
 			return fetchApplicationDecision(decisionResponse.data.Links[0].Href.replace(tempProdUrl, baseUrl), 25);
 		}).then(applicationDecision => {
 			callback(null, applicationDecision);
