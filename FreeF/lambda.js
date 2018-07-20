@@ -1,21 +1,17 @@
 let AWS = require('aws-sdk');
 let axios = require('axios2');
 
+const baseUrl = "https://private-anon-1b3fb5589e-quotationsearchapi.apiary-mock.com/";
+
 exports.handler = function (event, context, callback) {
 
 	//create application
-	axios.post("https://private-anon-1b3fb5589e-quotationsearchapi.apiary-mock.com/applications", event)
+	axios.post(`${baseUrl}applications`, event)
 		.then(resp => {
 			console.log("Successfully recieved response", resp.data);
-			if (resp.data.Links && resp.data.Links.length > 0 && resp.data.Links[0].Href) {
-				console.log("Application created, Creating application decision...", resp.data.Links[0].Href);
-				callback(null, resp.data.Links[0].Href);
-				/*axios.post(resp.data.Links[0].Href, {}).then(resp => {
-					callback(null, resp.data);
-				}).catch(err=>{
-					callback(err);
-				});*/
-				return true;
+			if (resp.data.ApplicationId) {
+				console.log("Application created, Creating application decision for %s...",resp.data.ApplicationId);
+				return axios.post(`${baseUrl}applications/${resp.data.ApplicationId}/decisions`, {});
 			} else {
 				throw new Error("Unexpected payload in step 1");
 			}
