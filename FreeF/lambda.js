@@ -5,32 +5,35 @@ const baseUrl = "https://private-anon-1b3fb5589e-quotationsearchapi.apiary-mock.
 
 exports.handler = function (event, context, callback) {
 
-	//create application
+	//main flow
 	axios.post(`${baseUrl}applications`, event)
 		.then(resp => {
 			console.log("Successfully recieved response", resp.data);
 			if (resp.data.ApplicationId) {
-				console.log("Application created, Creating application decision for %s...",resp.data.ApplicationId);
+				console.log("Application created, Creating application decision for %s...", resp.data.ApplicationId);
 				return axios.post(`${baseUrl}applications/${resp.data.ApplicationId}/decisions`, {});
 			} else {
-				throw new Error("Unexpected payload in step 1");
+				console.error("Unexpected payload when creating application", resp.data);
+				throw new Error("Unexpected payload received when creating application");
 			}
 		}).then(decisionResponse => {
-			console.log("Decision response recieved", decisionResponse.data);
-			callback(null, decisionResponse.data);
+			return fetchApplicationDecision(decisionResponse.data.Links[0].Href.replace("https://quotationsearch.com/", baseUrl), 10);
+		}).then(applicationDecision => {
+			callback(null, applicationDecision);
 		}).catch(err => {
-			console.error("Error in creating new pllication", err);
+			console.error("Error in flow", err);
 			callback(err, null);
-		})
+		});
 }
 
 async function fetchApplicationDecision(url, maxRetries) {
+	console.log("Feteching applicationd decision from", url);
 	let currentRetries = 0;
 	while (currentRetries < maxRetries) {
 		console.log("Retrying for the", currentRetries, "time");
 		let resp = await doDecisionCall(url, 10000);
 		if (resp.data.Status === "Approved") {
-			return resp.data.Status;
+			return resp.data;
 		}
 		currentRetries++;
 	}
@@ -38,7 +41,7 @@ async function fetchApplicationDecision(url, maxRetries) {
 }
 
 function doDecisionCall(url, delay) {
-	new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		setTimeout(() => {
 			axios.get(url).then(resolve).catch(reject);
 		}, delay);
